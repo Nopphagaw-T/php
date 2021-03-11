@@ -12,7 +12,7 @@
         echo "Failed to connect to MySQL: " . $mysqli -> connect_error;
         exit();
     }else{
-        echo "Connect success...";
+        echo "Connect successgg...";
     }
     $sqltxt = ""
 ?>
