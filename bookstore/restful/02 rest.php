@@ -13,7 +13,6 @@
         debug_text("Error Unknown this Request", $debug_mode);
         http_response_code(405);
     }
-
     function show_data($debug_mode){
         $mydb = new db("root", "", "test", $debug_mode);
         echo json_encode($mydb->query("select * from customer"));
