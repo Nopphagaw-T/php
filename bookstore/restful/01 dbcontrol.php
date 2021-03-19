@@ -14,13 +14,24 @@
             $this->debug_text("Conect Success...");
         } 
     }
-    function query($sql){
+             //query
+    function sel_data($sql){
         $result = $this->db->query($sql);
         $this->debug_text($sql);
         $data = $result->fetch_all(MYSQLI_ASSOC);
-        // $this->debug_text(print_r($data));
+        if($this->debug){
+         echo "<pre>";
+         echo print_r($data);
+         echo "</pre>";
+        }
         return $data;
     }
+
+    function query($sql){
+        $result = $this->db->query($sql);
+        return $result;
+    }
+
     function debug_text($text){
         if($this->debug){ 
             #if true debug text on for track any 
@@ -30,6 +41,6 @@
     function close(){ $this->db->close(); }
     }
 
-    #$mydb = new db("root", "", "test", false);
+    #$mydb = new db("root", "", "book", false);
 
 ?>

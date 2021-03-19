@@ -19,6 +19,11 @@
             if($this->debug_mode==true) print_r($data);
             return $data;
         }
+
+        public function query_only($sql){
+            $result = $this->db->query($sql);
+        }
+        
         public function close(){
             $this->db->close();
         } 
