@@ -7,7 +7,6 @@
         echo json_encode(product_list(),JSON_UNESCAPED_UNICODE);
     }else if($_SERVER["REQUEST_METHOD"]=='POST'){
         echo json_encode(open_bill());
-
     }
     function product_list(){
         $db = new database();
@@ -24,51 +23,36 @@
     }
 
     function open_bill(){
-        //1. check have some openbill ? 
-        //1a no: create new open_bill
-        //1b yes: check status openbill =1? 
-        //    1.1a yes: 
-        //        1.2.1a check product id exist yes: update qty in bill_detail
-        //        1.2.2b check product id exist no:  add product to bill_detail
-        //    1.1b no:
+        $step=1; $bill_id=1; $bill_head=""; $bill_detail="";
         $db = new database();
         $db->connect();
         $sql = "SELECT Bill_id,Bill_status FROM bill WHERE Cus_ID='{$_SESSION['cus_id']}' order by Bill_id desc limit 1";
         $bill_result = $db->query($sql);
-        $p_id = $_POST['p_id'];
-        $p_qty= $_POST['p_qty'];
-        $p_price =$_POST['p_price'];
+        $p_id = $_POST['p_id']; $p_qty= $_POST['p_qty']; $p_price =$_POST['p_price'];
         if(sizeof($bill_result)==0){
-            // insert new
-            $sql = "INSERT INTO bill(Bill_id, Cus_ID, Bill_Status) VALUES (1,'{$_SESSION['cus_id']}',0)";
+            $step="2:insert new";
+            $sql = "INSERT INTO bill(Bill_id, Cus_ID, Bill_Status) VALUES ({$bill_id},'{$_SESSION['cus_id']}',0)";
             $result = $db->exec($sql);
-            $sql = "INSERT INTO bill_detail(Bill_id, Product_ID, Quantity, Unit_Price) 
-                    VALUES (1,'{$p_id}','{$p_qty}','{$p_price}')";
+            $sql = "INSERT INTO bill_detail(Bill_id, Product_ID, Quantity, Unit_Price) VALUES (1,'{$p_id}','{$p_qty}','{$p_price}')";
             $result = $db->exec($sql);
         }else{
-            // check [0][0] bill_id 
-            //       [0][1] bill status
+            $step="3:add new item";  // check [0][0] bill_id        [0][1] bill status
             if($bill_result[0][1]==0){
-                $sql = "SELECT Bill_id,Product_ID FROM bill_detail 
-                        WHERE Bill_id='{$_SESSION['cus_id']}' 
-                        and Product_ID = '{$p_id}'";
-                $result = $db->query($sql);
-                if(sizeof($result)==0){
-                    //add new product
-                    $sql = "INSERT INTO bill_detail(Bill_id, Product_ID, Quantity, Unit_Price) 
-                    VALUES ({$bill_result[0][0]},{$p_id},{$p_qty},{$p_price})";
-                    $result = $db->exec($sql);
-                }else{
-                    //update current item
-
+                $sql = "INSERT INTO bill_detail(Bill_id, Product_ID, Quantity, Unit_Price) VALUES ({$bill_result[0][0]},{$p_id},{$p_qty},{$p_price})";
+                $result = $db->exec($sql);
+                if($result==0){
+                    $step="4:update item";
+                    $bill_id = $bill_result[0][0];
+                    $sql2 = "UPDATE bill_detail SET Quantity={$p_qty},Unit_Price={$p_price} WHERE Bill_id={$bill_id} and Product_ID={$p_id}";
+                    $result = $db->exec($sql2);
+                    $step="5:update complete";
                 }
+                $sql = "Select * from bill where Bill_Id={$bill_result[0][0]}";
+                $bill_head = $db->query($sql);
+                $sql = "Select * from bill_detail where Bill_Id={$bill_result[0][0]}";
+                $bill_detail = $db->query($sql);       
             }
         }
-
-        #INSERT INTO bill(Bill_id, Cus_ID, Bill_Status) VALUES (1,1,1)
-        return $result;
-
-
+        return ["step"=>$step ,"bill"=>json_encode($bill_head), "bill_detail"=>$bill_detail];
     }
-    
 ?>
