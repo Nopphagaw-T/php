@@ -65,34 +65,36 @@
     function open_po(idx){
         let out = document.getElementById("out3");
         let out2 = document.getElementById("out4");
-        $p_qty = document.getElementById("n_"+idx);
+        p_qty = document.getElementById("n_"+idx);
         xhttp = new XMLHttpRequest();
-        $p_id    = arr[idx][0]; //id
-        $p_price = arr[idx][5]; //price
+        p_id    = arr[idx][0]; //id
+        p_price = arr[idx][5]; //price
         xhttp.onreadystatechange = function(){
             if(this.readyState==4 && this.status==200){
-                alert(this.responseText);
-                arr = JSON.parse(this.responseText);
-
-                bill = arr[0];
-                bill_detail = arr[1];
+                //alert(this.responseText);
+                arr2 = JSON.parse(this.responseText);
+                //bill header
+                bill = arr2[0];
+                bill_detail = arr2[1];
                 text = "<table border='1'>";
-                text += "<tr><td>Bill ID</td><td>CUS_ID</td><td>EMP_ID</td><td>Bill_Date</td><td>Bill STATUS</td><td>Comment</td></tr>";
+                text += "<tr><td>Bill ID</td><td>CUS_ID</td><td>EMP_ID</td><td>Bill_Date</td><td>Bill STATUS</td><td>Comment</td><td></td></tr>";
                 text += "<tr>"
                 for(i=0;i<bill.length;i++){
                     text+= "<th>"+bill[i]+"</th>"; 
                 }
-                text += "</tr></table>";
+                text += "<td><button onclick='pay_bill("+bill[0]+")'>Paid Bill</button></td></tr></table>";
                 out.innerHTML = text;
 
-                bill_detail = arr[1];
-                text2 = "<table border='1'>";
-                text2 += "<tr><td>Bill ID</td><td>PRODUCT_CODE</td><td>Product_Name</td><td>Quantity</td><td>PRICE</td><td>Total_Price</td></tr>";
+                //bill detail
+                bill_detail = arr2[1];
+                text2 = "<table id='MyTable' border='1'>";
+                text2 += "<tr><td>ITEM No.</td><td>PRODUCT_CODE</td><td>Product_Name</td><td>Quantity</td><td>PRICE</td><td>Total_Price</td><td></td></tr>";
                 for(i=0;i<bill_detail.length;i++){
-                    for(j=0;j<bill_detail[i].length;j++){
+                    text2 += "<tr><td>"+(i+1)+"</td>";
+                    for(j=1;j<bill_detail[i].length;j++){
                         text2 += "<td>"+ bill_detail[i][j]+"</td>";
                     }
-                    text2 = "<tr>"+text2+"<td></td><td></td><td></td></tr>";
+                    text2 = text2+"<td><button onclick='del_product("+bill[0]+","+bill_detail[i][0]+","+i+")'>Remove from Cart</button></td></tr>";
                 }
                 text2 += "</table>";
                 out2.innerHTML = text2;
@@ -100,8 +102,34 @@
         }
         xhttp.open("POST","product_rest.php",true);
         xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-        xhttp.send("p_id="+$p_id+"&p_price="+$p_price+"&p_qty="+$p_qty.value);
+        xhttp.send("p_id="+p_id+"&p_price="+p_price+"&p_qty="+p_qty.value);
     }
+
+    function del_product(bill_id, p_code, idx){
+        //alert(p_code);
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if(this.readyState==4 && this.status==200){
+                //alert(this.responseText);
+                table =  document.getElementbyId('#MyTable');
+                table = deleteRow(idx+1);
+            }
+        }
+        xhttp.open("DEL","product_rest.php?bill_id="+bill_id+"&p_id="+p_code,true);
+        xhttp.send();
+    } 
+    
+    function pay_bill(bill_id){
+        //alert(p_code);
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if(this.readyState==4 && this.status==200){
+                alert(this.responseText);
+            }
+        }
+        xhttp.open("PUT","product_rest.php?bill_id="+bill_id,true);
+        xhttp.send();
+    } 
     </script>
 </body>
 </html>

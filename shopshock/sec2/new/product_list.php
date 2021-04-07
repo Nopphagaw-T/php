@@ -13,9 +13,10 @@
 </head>
 <body onload= "load_doc()">
     <center>
-        <div id="out"></div>
-        <br>
-        <div id="out2"></div>
+        <div id="out"></div><br>
+        <div id="out2"></div><br>
+        <div id="out3"></div>
+        <div id="out4"></div>
     </center>
     <script>
     let arr;
@@ -64,6 +65,8 @@
     }
 
     function open_po(idx,cus_id){
+        out3 = document.getElementById("out3");
+        out4 = document.getElementById("out4");
         qty = document.getElementById("n"+idx);
         //alert("product_code="+arr[idx][1]+"="+qty.value);
         p_price = arr[idx][5];
@@ -71,6 +74,28 @@
         xhttp.onreadystatechange = function(){ 
             if(this.readyState==4 && this.status==200){
                 alert(this.responseText);
+                arr2 = JSON.parse(this.responseText);
+                // bill header section
+                head = arr2["bill_head"][0];
+                text ="<table border='1'>";
+                text += "<tr><th>Bill_ID</th><th>Cus_ID</th><th>Emp_ID</th><th>Bill_Date</th><th>Bill_Status</th><th> Paid? </th></tr>";
+                for(i=0;i<head.length;i++){
+                    text += "<td>"+head[i]+"</td>";
+                }
+                text = "<tr>"+ text+ "<td><a href='product_rest.php?paid=1'>paid</a></td></tr>";
+                text += "</table>";
+                out3.innerHTML = text;
+                //bill detail section
+                detail = arr2["bill_detail"];
+                text2 ="<table border='1'>";
+                text2 +="<tr><th>Product_ID</td><th>Product_Code</td><th>Price</td><th>Product_Qty</td><th>Total</td></tr>";
+                for(x=0;x<detail.length;x++){ 
+                    for(y=0;y<detail[x].length;y++){ 
+                        text2+= "<td>"+detail[x][y]+"</td>"; 
+                    }
+                    text2 = "<tr>" +text2 + "</tr>";
+                }
+                out4.innerHTML = text2;
             }
         }
         xhttp.open("POST","product_rest.php",true);
